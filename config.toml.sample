@@ -1,0 +1,50 @@
+[webapp]
+title = "Wiki PageRater"
+host  = "0.0.0.0"
+port  = 8000
+
+[confluence]
+wiki_url = "https://my.atlassian.net/wiki"
+username = "your-email@example.com"
+space = "your-space"
+
+[azure-ai]
+endpoint = "https://aai-your-instance.services.ai.azure.com/models"
+
+[azure-ai.model]
+deployment_name = "your-model-name"
+max_tokens = 1000
+temperature = 0.1
+top_p = 0.1
+input_token_cost = 0.15
+output_token_cost = 0.6
+
+[prompts]
+system_page_rating = "You are a document rating assistant. You have been trained to evaluate content in HTML format based on specific criteria."
+user_page_rating = """
+Evaluate the following HTML document strictly based on its **quality, specificity, and usefulness within an internal organizational setting**. 
+Rate it on a scale of 1-10, where 10 represents the highest standard.
+
+### **Key Evaluation Criteria:**
+1. **Clarity** - Is the content well-structured, easy to understand, and free of unnecessary complexity?
+2. **Accuracy** - Is the information factually correct, precise, and free from misleading details?
+3. **Relevance & Uniqueness** - **Does the content provide unique, internal knowledge, specific to organizational procedures, 
+   or is it just generic information available in public documentation?**
+   - Penalize content that could be found in vendor documentation.
+4. **Actionability** - Can a reader **directly apply the steps within the organization**, or is it too theoretical/generalized?
+5. **Consistency** - Does the page follow established documentation standards, formatting, and terminology?
+
+### **Content for Evaluation:**
+{{wiki_content}}
+
+### **Output Instructions:**
+- Assign an **overall quality rating (1-10)**.
+- Assign a quality rating for each evaluation criterion (1-10).
+- Format the title as: 'Page Rating: X/10 - Content: Y', where X is the overall rating and Y is the type of content detected which must be one of 'HOW-TO', 'Technical Standard', 'Policy', 'System Architecture', 'System Build', 'Product/Service', or 'Other - Not sure'
+- If the document's content type is detected as **HOW-TO** or **System Build** and the content is **too generic** and can be found in vendor documentation, **penalize the overall rating by 3 points**
+- Provide **specific improvement recommendations**
+"""
+
+[cache]
+database = "cache/cc_page_rater_cache.db"
+ttl_seconds = 2592000  # Cache expiration time
